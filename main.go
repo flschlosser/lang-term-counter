@@ -15,10 +15,8 @@ func main() {
 		return
 	}
 
-	parser := HtmlParser{}
-	content, err := parser.Parse(response.Body)
-	if err != nil {
-		fmt.Printf("Error unable to parse content because error:\n%s\n", err)
-	}
+	parser := WikiContentParser{}
+	content := parser.Parse(response.Body)
+
 	fmt.Printf("Content:\n%s\n", content)
 }
