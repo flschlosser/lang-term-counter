@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"lang-term-counter/src/wiki"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 		return
 	}
 
-	parser := WikiContentParser{}
+	parser := wiki.NewWikiContentParser()
 	content := parser.Parse(response.Body)
 
 	fmt.Printf("Content:\n%s\n", content)
