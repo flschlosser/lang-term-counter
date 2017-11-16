@@ -14,7 +14,7 @@ type contentParser struct {
 	shouldPrintTextOfToken bool
 	divCount               int
 	buffer                 bytes.Buffer
-	handlers 			   map[html.TokenType]func(token html.Token)(finish bool)
+	handlers               map[html.TokenType]func(token html.Token)(finish bool)
 }
 
 func NewContentParser() *contentParser {
@@ -22,7 +22,7 @@ func NewContentParser() *contentParser {
 		shouldPrintTextOfToken: false,
 		divCount:               0,
 		buffer:                 bytes.Buffer{},
-		handlers:				make(map[html.TokenType]func(token html.Token)(finish bool)),
+		handlers:               make(map[html.TokenType]func(token html.Token)(finish bool)),
 	}
 	parser.handlers[html.StartTagToken] = parser.handleStartTagToken
 	parser.handlers[html.EndTagToken] = parser.handleEndTagToken
