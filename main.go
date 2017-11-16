@@ -16,7 +16,7 @@ func main() {
 		return
 	}
 
-	parser := wiki.NewWikiContentParser()
+	parser := wiki.NewContentParser()
 	content := parser.Parse(response.Body)
 
 	fmt.Printf("Content:\n%s\n", content)

@@ -10,15 +10,15 @@ const (
 	contentDivIdValue = "mw-content-text"
 )
 
-type wikiContentParser struct {
+type contentParser struct {
 	shouldPrintTextOfToken bool
 	divCount               int
 	buffer                 bytes.Buffer
 	handlers 			   map[html.TokenType]func(token html.Token)(finish bool)
 }
 
-func NewWikiContentParser() *wikiContentParser {
-	parser := &wikiContentParser{
+func NewContentParser() *contentParser {
+	parser := &contentParser{
 		shouldPrintTextOfToken: false,
 		divCount:               0,
 		buffer:                 bytes.Buffer{},
@@ -31,7 +31,7 @@ func NewWikiContentParser() *wikiContentParser {
 	return parser
 }
 
-func (p *wikiContentParser) Parse(reader io.Reader) string {
+func (p *contentParser) Parse(reader io.Reader) string {
 	tokenizer := html.NewTokenizer(reader)
 
 	p.shouldPrintTextOfToken = false
@@ -46,7 +46,7 @@ func (p *wikiContentParser) Parse(reader io.Reader) string {
 	return p.buffer.String()
 }
 
-func (p *wikiContentParser) processToken(tokenType html.TokenType, token html.Token) (finish bool) {
+func (p *contentParser) processToken(tokenType html.TokenType, token html.Token) (finish bool) {
 	handler := p.handlers[tokenType]
 	if handler == nil {
 		return false
@@ -54,7 +54,7 @@ func (p *wikiContentParser) processToken(tokenType html.TokenType, token html.To
 	return handler(token)
 }
 
-func (p *wikiContentParser) handleStartTagToken(token html.Token) (finish bool) {
+func (p *contentParser) handleStartTagToken(token html.Token) (finish bool) {
 	// to handle divs within the content div
 	if token.Data == "div" && p.divCount > 0 {
 		p.divCount++
@@ -68,7 +68,7 @@ func (p *wikiContentParser) handleStartTagToken(token html.Token) (finish bool) 
 	return false
 }
 
-func (p *wikiContentParser) handleEndTagToken(token html.Token) (finish bool) {
+func (p *contentParser) handleEndTagToken(token html.Token) (finish bool) {
 	if token.Data == "div" && p.divCount > 0 {
 		p.divCount--
 	} else
@@ -78,14 +78,14 @@ func (p *wikiContentParser) handleEndTagToken(token html.Token) (finish bool) {
 	return false
 }
 
-func (p *wikiContentParser) handleTextToken(token html.Token) (finish bool) {
+func (p *contentParser) handleTextToken(token html.Token) (finish bool) {
 	if p.shouldPrintTextOfToken {
 		p.buffer.WriteString(token.Data)
 	}
 	return false
 }
 
-func (p *wikiContentParser) handleErrorToken(token html.Token) (finish bool) {
+func (p *contentParser) handleErrorToken(token html.Token) (finish bool) {
 	return true // EOF
 }
 
