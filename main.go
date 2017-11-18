@@ -2,22 +2,15 @@ package main
 
 import (
     "fmt"
-    "net/http"
-    "lang-term-counter/src/wiki"
 )
 
 func main() {
+    enCollector := Collector{
+        "en",
+        "https://en.wikipedia.org/wiki/Special:Random",
+        1000}
 
-    url := "https://en.wikipedia.org/wiki/Hans_Mork"
+    enTermFrequency := enCollector.CollectTermFrequency()
 
-    response, err := http.Get(url)
-    if err != nil {
-        fmt.Printf("Error: unable to load content of url '%s'\n", url)
-        return
-    }
-
-    parser := wiki.NewContentParser()
-    content := parser.Parse(response.Body)
-
-    fmt.Printf("Content:\n%s\n", content)
+    fmt.Printf("english term frequency:\n%s\n", enTermFrequency)
 }
