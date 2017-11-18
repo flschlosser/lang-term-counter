@@ -14,7 +14,6 @@ type contentParser struct {
     shouldPrintTextOfToken bool
     divCount               int
     buffer                 bytes.Buffer
-    handlers               map[html.TokenType]func(token html.Token)(finish bool)
 }
 
 func NewContentParser() *contentParser {
@@ -22,12 +21,7 @@ func NewContentParser() *contentParser {
         shouldPrintTextOfToken: false,
         divCount:               0,
         buffer:                 bytes.Buffer{},
-        handlers:               make(map[html.TokenType]func(token html.Token)(finish bool)),
     }
-    parser.handlers[html.StartTagToken] = parser.handleStartTagToken
-    parser.handlers[html.EndTagToken] = parser.handleEndTagToken
-    parser.handlers[html.TextToken] = parser.handleTextToken
-    parser.handlers[html.ErrorToken] = parser.handleErrorToken
     return parser
 }
 
@@ -39,22 +33,28 @@ func (p *contentParser) Parse(reader io.Reader) string {
     p.buffer = bytes.Buffer{}
 
     for {
-        if p.processToken(tokenizer.Next(), tokenizer.Token()) {
-            break
+        tokenType := tokenizer.Next()
+        token := tokenizer.Token()
+
+        switch tokenType {
+        case html.ErrorToken:
+            return p.buffer.String()
+
+        case html.StartTagToken:
+            p.handleStartTagToken(token)
+
+        case html.TextToken:
+            p.handleTextToken(token)
+
+        case html.EndTagToken:
+            p.handleEndTagToken(token)
+
         }
     }
     return p.buffer.String()
 }
 
-func (p *contentParser) processToken(tokenType html.TokenType, token html.Token) (finish bool) {
-    handler := p.handlers[tokenType]
-    if handler == nil {
-        return false
-    }
-    return handler(token)
-}
-
-func (p *contentParser) handleStartTagToken(token html.Token) (finish bool) {
+func (p *contentParser) handleStartTagToken(token html.Token) {
     // to handle divs within the content div
     if token.Data == "div" && p.divCount > 0 {
         p.divCount++
@@ -65,28 +65,21 @@ func (p *contentParser) handleStartTagToken(token html.Token) (finish bool) {
     if isTokenTheContentDiv(token) {
         p.divCount++
     }
-    return false
 }
 
-func (p *contentParser) handleEndTagToken(token html.Token) (finish bool) {
+func (p *contentParser) handleEndTagToken(token html.Token) {
     if token.Data == "div" && p.divCount > 0 {
         p.divCount--
     } else
     if token.Data == "p" {
         p.shouldPrintTextOfToken = false
     }
-    return false
 }
 
-func (p *contentParser) handleTextToken(token html.Token) (finish bool) {
+func (p *contentParser) handleTextToken(token html.Token) {
     if p.shouldPrintTextOfToken {
         p.buffer.WriteString(token.Data)
     }
-    return false
-}
-
-func (p *contentParser) handleErrorToken(token html.Token) (finish bool) {
-    return true // EOF
 }
 
 func isTokenTheContentDiv(token html.Token) bool {
